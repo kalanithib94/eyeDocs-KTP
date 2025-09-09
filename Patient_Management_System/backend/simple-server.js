@@ -6,6 +6,8 @@ require('dotenv').config();
 
 // Import Salesforce service
 const salesforceService = require('./services/salesforce');
+// Import settings routes
+const settingsRoutes = require('./routes/settings');
 
 const app = express();
 const PORT = 5000;
@@ -61,6 +63,9 @@ db.serialize(() => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'success', message: 'Server is running!' });
 });
+
+// Settings routes
+app.use('/api/settings', settingsRoutes);
 
 // Salesforce test endpoint
 app.get('/api/salesforce/test', async (req, res) => {
