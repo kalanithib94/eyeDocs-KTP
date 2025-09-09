@@ -257,6 +257,34 @@ app.get('/api/appointments/today', (req, res) => {
   });
 });
 
+// Update appointment status
+app.patch('/api/appointments/:id/status', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  
+  if (!status || !['scheduled', 'confirmed', 'completed', 'cancelled', 'urgent'].includes(status)) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Invalid status value'
+    });
+  }
+  
+  db.run(
+    'UPDATE appointments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [status, id],
+    function(err) {
+      if (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ status: 'error', message: 'Database error' });
+      } else if (this.changes === 0) {
+        res.status(404).json({ status: 'error', message: 'Appointment not found' });
+      } else {
+        res.json({ status: 'success', message: 'Appointment status updated successfully' });
+      }
+    }
+  );
+});
+
 // Analytics endpoints
 app.get('/api/analytics/dashboard', (req, res) => {
   // Get total patients
