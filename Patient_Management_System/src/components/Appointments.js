@@ -88,6 +88,9 @@ const Appointments = () => {
       return;
     }
     
+    console.log('🔍 Appointment Form Data:', formData);
+    console.log('🔍 Editing Appointment:', editingAppointment);
+    
     try {
       if (editingAppointment) {
         // Update existing appointment via API
@@ -131,8 +134,13 @@ const Appointments = () => {
         duration: 30
       });
     } catch (error) {
-      console.error('Error saving appointment:', error);
-      toast.error('Failed to save appointment');
+      console.error('❌ Error saving appointment:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error('Failed to save appointment: ' + (error.response?.data?.message || error.message));
     }
   };
 
