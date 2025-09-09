@@ -15,17 +15,28 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   // Fetch dashboard analytics
-  const { data: analyticsData, loading: analyticsLoading } = useApi(() => analyticsAPI.getDashboard());
+  const { data: analyticsData, loading: analyticsLoading, error: analyticsError } = useApi(() => analyticsAPI.getDashboard());
   
   // Fetch recent patients
-  const { data: patientsData, loading: patientsLoading } = useApi(() => 
+  const { data: patientsData, loading: patientsLoading, error: patientsError } = useApi(() => 
     patientsAPI.getAll({ limit: 5, status: 'active' })
   );
   
   // Fetch today's appointments
-  const { data: appointmentsData, loading: appointmentsLoading } = useApi(() => 
+  const { data: appointmentsData, loading: appointmentsLoading, error: appointmentsError } = useApi(() => 
     appointmentsAPI.getToday()
   );
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 Dashboard Debug:');
+    console.log('Analytics Data:', analyticsData);
+    console.log('Patients Data:', patientsData);
+    console.log('Appointments Data:', appointmentsData);
+    console.log('Analytics Error:', analyticsError);
+    console.log('Patients Error:', patientsError);
+    console.log('Appointments Error:', appointmentsError);
+  }, [analyticsData, patientsData, appointmentsData, analyticsError, patientsError, appointmentsError]);
 
   // Enhanced sample data for charts with medical context
   const patientTrendData = [
@@ -53,8 +64,23 @@ const Dashboard = () => {
     completedAppointments: Number(analyticsData?.data?.completedAppointments) || 0
   };
 
-  const recentPatients = patientsData?.data || [];
-  const upcomingAppointments = appointmentsData?.data || [];
+  // Transform patient data to match frontend expectations
+  const recentPatients = (patientsData?.data || []).map(patient => ({
+    id: patient.id,
+    name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Unknown Patient',
+    age: patient.age || 'N/A',
+    condition: patient.medical_history || 'No condition specified',
+    lastVisit: patient.last_visit || 'Never',
+    status: patient.status || 'active'
+  }));
+  
+  const upcomingAppointments = (appointmentsData?.data || []).map(appointment => ({
+    id: appointment.id,
+    patientName: `${appointment.patient_first_name || ''} ${appointment.patient_last_name || ''}`.trim() || 'Unknown Patient',
+    time: appointment.appointment_time || 'TBD',
+    type: appointment.appointment_type || 'General',
+    status: appointment.status || 'scheduled'
+  }));
 
   const StatCard = ({ title, value, icon: Icon, color, trend }) => (
     <div className="stat-card">
@@ -250,7 +276,7 @@ const Dashboard = () => {
                     <span>{appointment.time || 'TBD'}</span>
                   </div>
                   <div className="appointment-details">
-                    <h4 className="appointment-patient">{appointment.patient || 'Unknown Patient'}</h4>
+                    <h4 className="appointment-patient">{appointment.patientName || 'Unknown Patient'}</h4>
                     <p className="appointment-type">{appointment.type || 'General'}</p>
                   </div>
                   <div className="appointment-status">
