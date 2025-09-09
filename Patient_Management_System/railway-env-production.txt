@@ -1,0 +1,32 @@
+# Railway Environment Variables - PRODUCTION READY
+# Copy these EXACT values to Railway dashboard > Variables
+
+# Backend Configuration
+NODE_ENV=production
+PORT=5000
+JWT_SECRET=eyedocs-ktp-secret-2024
+
+# Database
+DATABASE_URL=file:./database/patient_management.db
+
+# Default Salesforce Configuration
+# Master Enterprise Test Org
+SALESFORCE_USERNAME=masterenterprise@test.com
+SALESFORCE_PASSWORD=1@Balumani9A
+SALESFORCE_SECURITY_TOKEN=nm2A4WwPTmKR6NoWAyEfboWg
+SALESFORCE_LOGIN_URL=https://test.salesforce.com
+
+# Frontend URL (for CORS)
+FRONTEND_URL=https://eye-docs-ktp-git-main-kalanithib94s-projects.vercel.app
+
+# ============================================
+# HOW TO ADD TO RAILWAY:
+# 1. Go to https://railway.app/dashboard
+# 2. Select your project (eyedocs-ktp)
+# 3. Click on your service
+# 4. Go to "Variables" tab
+# 5. Click "RAW Editor"
+# 6. Copy and paste everything above (except these comments)
+# 7. Click "Save"
+# 8. Railway will automatically redeploy
+# ============================================

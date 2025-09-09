@@ -5,11 +5,12 @@
  */
 
 const defaultSalesforceConfig = {
-  // Default Demo Org Credentials (Replace with your actual demo org credentials)
-  DEFAULT_USERNAME: 'demo@eyedocs-ktp.sandbox',
-  DEFAULT_PASSWORD: 'DemoPass2024!',
-  DEFAULT_SECURITY_TOKEN: 'demoTokenXYZ123456789',
-  DEFAULT_LOGIN_URL: 'https://test.salesforce.com', // Using sandbox URL for demo
+  // Default Demo Org Credentials - Master Enterprise Org
+  // NOTE: Credentials configured - will work in simulation mode if connection fails
+  DEFAULT_USERNAME: 'masterenterprise@test.com',
+  DEFAULT_PASSWORD: '1@Balumani9A',
+  DEFAULT_SECURITY_TOKEN: 'nm2A4WwPTmKR6NoWAyEfboWg',
+  DEFAULT_LOGIN_URL: 'https://login.salesforce.com', // Using production URL
   
   // Instructions for setting up your own demo org
   SETUP_INSTRUCTIONS: `
