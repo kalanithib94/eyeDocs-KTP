@@ -93,8 +93,9 @@ router.post('/salesforce', async (req, res) => {
       process.env.SALESFORCE_PASSWORD = password;
       process.env.SALESFORCE_SECURITY_TOKEN = securityToken;
       
-      // Reinitialize Salesforce service
+      // Update Salesforce service with new user credentials
       const salesforceService = require('../services/salesforce');
+      salesforceService.setUserCredentials(config);
       await salesforceService.connect();
       
       res.json({

@@ -1,0 +1,21 @@
+# Railway Environment Variables
+# Copy these to Railway dashboard > Variables
+
+# Backend Configuration
+NODE_ENV=production
+PORT=5000
+JWT_SECRET=your-secret-key-here
+
+# Database
+DATABASE_URL=file:./database/patient_management.db
+
+# Default Salesforce Configuration (Optional)
+# If not set, the app will use the hardcoded demo credentials in default-salesforce.js
+# Users can still override these through the Settings page
+SALESFORCE_USERNAME=your-demo@salesforce.com
+SALESFORCE_PASSWORD=YourDemoPassword123
+SALESFORCE_SECURITY_TOKEN=YourDemoSecurityToken
+SALESFORCE_LOGIN_URL=https://test.salesforce.com
+
+# Frontend URL (for CORS)
+FRONTEND_URL=https://eye-docs-ktp-git-main-kalanithib94s-projects.vercel.app

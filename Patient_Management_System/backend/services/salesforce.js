@@ -1,24 +1,29 @@
 const jsforce = require('jsforce');
+const { getSalesforceConfig } = require('../config/default-salesforce');
 
 class SalesforceService {
   constructor() {
     this.conn = null;
     this.isConnected = false;
+    this.userSettings = null;
+  }
+
+  // Allow updating credentials from user settings
+  setUserCredentials(credentials) {
+    this.userSettings = credentials;
+    this.isConnected = false; // Force reconnection with new credentials
   }
 
   async connect() {
     try {
-      // Salesforce connection configuration
-      const config = {
-        loginUrl: process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com',
-        username: process.env.SALESFORCE_USERNAME,
-        password: process.env.SALESFORCE_PASSWORD,
-        securityToken: process.env.SALESFORCE_SECURITY_TOKEN
-      };
+      // Get Salesforce configuration (user settings > env vars > default demo)
+      const config = getSalesforceConfig(this.userSettings);
+      
+      console.log(`🔐 Using Salesforce credentials from: ${config.source}`);
 
       // Check if we have the required credentials
       if (!config.username || !config.password) {
-        console.log('⚠️  Salesforce credentials not configured. Using simulation mode.');
+        console.log('⚠️  No Salesforce credentials available. Using simulation mode.');
         return { connected: false, mode: 'simulation' };
       }
 
@@ -27,7 +32,8 @@ class SalesforceService {
       });
 
       // Login to Salesforce
-      await this.conn.login(config.username, config.password + config.securityToken);
+      const fullPassword = config.password + (config.securityToken || '');
+      await this.conn.login(config.username, fullPassword);
       
       this.isConnected = true;
       console.log('✅ Connected to Salesforce successfully');
