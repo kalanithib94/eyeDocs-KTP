@@ -25,12 +25,25 @@ const Appointments = () => {
     time: '',
     type: 'general',
     notes: '',
-    status: 'scheduled'
+    status: 'scheduled',
+    duration: 30
   });
+  const [patients, setPatients] = useState([]);
 
   useEffect(() => {
     loadAppointments();
+    loadPatients();
   }, []);
+
+  const loadPatients = async () => {
+    try {
+      const response = await fetch('https://eyedocs-ktp-production.up.railway.app/api/patients');
+      const data = await response.json();
+      setPatients(data.data || []);
+    } catch (error) {
+      console.error('Error loading patients:', error);
+    }
+  };
 
   const loadAppointments = async () => {
     setLoading(true);
@@ -69,13 +82,19 @@ const Appointments = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate that a patient is selected
+    if (!formData.patientId) {
+      toast.error('Please select a patient');
+      return;
+    }
+    
     try {
       if (editingAppointment) {
         // Update existing appointment via API
         await appointmentsAPI.update(editingAppointment.id, {
-          patient_id: formData.patientId,
-          appointment_date: formData.date,
-          appointment_time: formData.time,
+          patientId: parseInt(formData.patientId),
+          appointmentDate: formData.date,
+          appointmentTime: formData.time,
           type: formData.type,
           notes: formData.notes,
           status: formData.status,
@@ -85,9 +104,9 @@ const Appointments = () => {
       } else {
         // Add new appointment via API
         await appointmentsAPI.create({
-          patient_id: formData.patientId,
-          appointment_date: formData.date,
-          appointment_time: formData.time,
+          patientId: parseInt(formData.patientId),
+          appointmentDate: formData.date,
+          appointmentTime: formData.time,
           type: formData.type,
           notes: formData.notes,
           status: formData.status,
@@ -108,7 +127,8 @@ const Appointments = () => {
         time: '',
         type: 'general',
         notes: '',
-        status: 'scheduled'
+        status: 'scheduled',
+        duration: 30
       });
     } catch (error) {
       console.error('Error saving appointment:', error);
@@ -125,7 +145,8 @@ const Appointments = () => {
       time: appointment.time,
       type: appointment.type,
       notes: appointment.notes,
-      status: appointment.status
+      status: appointment.status,
+      duration: appointment.duration || 30
     });
     setShowModal(true);
   };
@@ -328,15 +349,21 @@ const Appointments = () => {
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Patient Name</label>
-                  <input
-                    type="text"
-                    name="patientName"
-                    value={formData.patientName}
+                  <label className="form-label">Select Patient</label>
+                  <select
+                    name="patientId"
+                    value={formData.patientId}
                     onChange={handleInputChange}
-                    className="form-input"
+                    className="form-select"
                     required
-                  />
+                  >
+                    <option value="">Choose a patient...</option>
+                    {patients.map(patient => (
+                      <option key={patient.id} value={patient.id}>
+                        {patient.first_name} {patient.last_name} (ID: {patient.id})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Appointment Type</label>
@@ -375,6 +402,20 @@ const Appointments = () => {
                     value={formData.time}
                     onChange={handleInputChange}
                     className="form-input"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Duration (minutes)</label>
+                  <input
+                    type="number"
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    min="15"
+                    max="240"
+                    step="15"
                     required
                   />
                 </div>
