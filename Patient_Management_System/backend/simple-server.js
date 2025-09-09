@@ -197,7 +197,7 @@ app.put('/api/patients/:id', (req, res) => {
   
   const params = [first_name, last_name, email, phone, date_of_birth, address, emergency_contact, medical_history, allergies, medications, status, id];
   
-  db.run(sql, params, async function(err) {
+  db.run(sql, params, function(err) {
     if (err) {
       console.error('Database error:', err);
       res.status(500).json({ status: 'error', message: 'Failed to update patient' });
@@ -207,71 +207,77 @@ app.put('/api/patients/:id', (req, res) => {
       console.log(`📋 Patient updated locally with ID: ${id}`);
       console.log(`🔄 Attempting Salesforce sync for update: ${first_name} ${last_name}`);
       
-      try {
-        // Get the patient's Salesforce ID first
-        db.get('SELECT salesforce_id FROM patients WHERE id = ?', [id], async (err, row) => {
-          if (err) {
-            console.error('Error fetching Salesforce ID:', err);
-            res.json({ status: 'success', data: updatedPatient, salesforceSync: 'failed', message: 'Patient updated locally, but Salesforce sync failed' });
-            return;
-          }
-          
-          if (row && row.salesforce_id) {
-            // Update existing Salesforce record
-            const salesforceResult = await salesforceService.updateReferral(row.salesforce_id, updatedPatient);
-            
-            if (salesforceResult.success) {
-              console.log(`✅ Patient updated in Salesforce: ${row.salesforce_id}`);
-              res.json({ 
-                status: 'success', 
-                data: updatedPatient,
-                salesforceSync: 'success',
-                salesforceId: row.salesforce_id,
-                message: 'Patient updated successfully! Synced to Salesforce.'
-              });
-            } else {
-              throw new Error('Salesforce update failed');
-            }
-          } else {
-            // No Salesforce ID, create new referral
-            const salesforceResult = await salesforceService.createReferral(updatedPatient);
-            
-            if (salesforceResult.success) {
-              // Update patient record with Salesforce ID
-              const updateSql = 'UPDATE patients SET salesforce_id = ? WHERE id = ?';
-              db.run(updateSql, [salesforceResult.salesforceId, id], (updateErr) => {
-                if (updateErr) {
-                  console.warn('⚠️  Failed to update patient with Salesforce ID:', updateErr.message);
-                } else {
-                  console.log(`✅ Patient updated with Salesforce ID: ${salesforceResult.salesforceId}`);
-                }
-              });
-              
-              res.json({ 
-                status: 'success', 
-                data: { ...updatedPatient, salesforce_id: salesforceResult.salesforceId },
-                salesforceSync: 'success',
-                salesforceId: salesforceResult.salesforceId,
-                message: 'Patient updated successfully! Synced to Salesforce as new referral.'
-              });
-            } else {
-              throw new Error('Salesforce sync failed');
-            }
-          }
-        });
-      } catch (salesforceError) {
-        console.warn('⚠️  Salesforce sync failed, but patient updated locally:', salesforceError.message);
+      // Get the patient's Salesforce ID first
+      db.get('SELECT salesforce_id FROM patients WHERE id = ?', [id], (err, row) => {
+        if (err) {
+          console.error('Error fetching Salesforce ID:', err);
+          res.json({ status: 'success', data: updatedPatient, salesforceSync: 'failed', message: 'Patient updated locally, but Salesforce sync failed' });
+          return;
+        }
         
-        res.json({ 
-          status: 'success', 
-          data: updatedPatient,
-          salesforceSync: 'failed',
-          salesforceError: salesforceError.message,
-          message: 'Patient updated successfully! Salesforce sync failed, but data is saved locally.'
-        });
-      }
+        // Handle Salesforce sync asynchronously
+        handleSalesforceUpdate(row, updatedPatient, res);
+      });
     }
   });
+  
+  // Separate async function to handle Salesforce sync
+  async function handleSalesforceUpdate(row, updatedPatient, res) {
+    try {
+      if (row && row.salesforce_id) {
+        // Update existing Salesforce record
+        const salesforceResult = await salesforceService.updateReferral(row.salesforce_id, updatedPatient);
+        
+        if (salesforceResult.success) {
+          console.log(`✅ Patient updated in Salesforce: ${row.salesforce_id}`);
+          res.json({ 
+            status: 'success', 
+            data: updatedPatient,
+            salesforceSync: 'success',
+            salesforceId: row.salesforce_id,
+            message: 'Patient updated successfully! Synced to Salesforce.'
+          });
+        } else {
+          throw new Error('Salesforce update failed');
+        }
+      } else {
+        // No Salesforce ID, create new referral
+        const salesforceResult = await salesforceService.createReferral(updatedPatient);
+        
+        if (salesforceResult.success) {
+          // Update patient record with Salesforce ID
+          const updateSql = 'UPDATE patients SET salesforce_id = ? WHERE id = ?';
+          db.run(updateSql, [salesforceResult.salesforceId, id], (updateErr) => {
+            if (updateErr) {
+              console.warn('⚠️  Failed to update patient with Salesforce ID:', updateErr.message);
+            } else {
+              console.log(`✅ Patient updated with Salesforce ID: ${salesforceResult.salesforceId}`);
+            }
+          });
+          
+          res.json({ 
+            status: 'success', 
+            data: { ...updatedPatient, salesforce_id: salesforceResult.salesforceId },
+            salesforceSync: 'success',
+            salesforceId: salesforceResult.salesforceId,
+            message: 'Patient updated successfully! Synced to Salesforce as new referral.'
+          });
+        } else {
+          throw new Error('Salesforce sync failed');
+        }
+      }
+    } catch (salesforceError) {
+      console.warn('⚠️  Salesforce sync failed, but patient updated locally:', salesforceError.message);
+      
+      res.json({ 
+        status: 'success', 
+        data: updatedPatient,
+        salesforceSync: 'failed',
+        salesforceError: salesforceError.message,
+        message: 'Patient updated successfully! Salesforce sync failed, but data is saved locally.'
+      });
+    }
+  }
 });
 
 // Delete patient
@@ -294,7 +300,7 @@ app.delete('/api/patients/:id', (req, res) => {
     const { salesforce_id, first_name, last_name } = row;
     
     // Delete from local database
-    db.run('DELETE FROM patients WHERE id = ?', [id], async function(err) {
+    db.run('DELETE FROM patients WHERE id = ?', [id], function(err) {
       if (err) {
         console.error('Database error:', err);
         res.status(500).json({ status: 'error', message: 'Failed to delete patient' });
@@ -302,42 +308,48 @@ app.delete('/api/patients/:id', (req, res) => {
         console.log(`📋 Patient deleted locally with ID: ${id}`);
         console.log(`🔄 Attempting Salesforce sync for deletion: ${first_name} ${last_name}`);
         
-        if (salesforce_id) {
-          try {
-            // Delete from Salesforce
-            const salesforceResult = await salesforceService.deleteReferral(salesforce_id);
-            
-            if (salesforceResult.success) {
-              console.log(`✅ Patient deleted from Salesforce: ${salesforce_id}`);
-              res.json({ 
-                status: 'success', 
-                message: 'Patient deleted successfully! Removed from Salesforce.',
-                salesforceSync: 'success',
-                salesforceId: salesforce_id
-              });
-            } else {
-              throw new Error('Salesforce deletion failed');
-            }
-          } catch (salesforceError) {
-            console.warn('⚠️  Salesforce deletion failed, but patient deleted locally:', salesforceError.message);
-            
-            res.json({ 
-              status: 'success', 
-              message: 'Patient deleted successfully! Salesforce sync failed, but data is removed locally.',
-              salesforceSync: 'failed',
-              salesforceError: salesforceError.message
-            });
-          }
-        } else {
-          console.log('ℹ️  No Salesforce ID found, patient deleted locally only');
-          res.json({ 
-            status: 'success', 
-            message: 'Patient deleted successfully! (No Salesforce record to sync)',
-            salesforceSync: 'skipped'
-          });
-        }
+        // Handle Salesforce sync asynchronously
+        handleSalesforceDelete(salesforce_id, first_name, last_name, res);
       }
     });
+    
+    // Separate async function to handle Salesforce sync
+    async function handleSalesforceDelete(salesforce_id, first_name, last_name, res) {
+      if (salesforce_id) {
+        try {
+          // Delete from Salesforce
+          const salesforceResult = await salesforceService.deleteReferral(salesforce_id);
+          
+          if (salesforceResult.success) {
+            console.log(`✅ Patient deleted from Salesforce: ${salesforce_id}`);
+            res.json({ 
+              status: 'success', 
+              message: 'Patient deleted successfully! Removed from Salesforce.',
+              salesforceSync: 'success',
+              salesforceId: salesforce_id
+            });
+          } else {
+            throw new Error('Salesforce deletion failed');
+          }
+        } catch (salesforceError) {
+          console.warn('⚠️  Salesforce deletion failed, but patient deleted locally:', salesforceError.message);
+          
+          res.json({ 
+            status: 'success', 
+            message: 'Patient deleted successfully! Salesforce sync failed, but data is removed locally.',
+            salesforceSync: 'failed',
+            salesforceError: salesforceError.message
+          });
+        }
+      } else {
+        console.log('ℹ️  No Salesforce ID found, patient deleted locally only');
+        res.json({ 
+          status: 'success', 
+          message: 'Patient deleted successfully! (No Salesforce record to sync)',
+          salesforceSync: 'skipped'
+        });
+      }
+    }
   });
 });
 
