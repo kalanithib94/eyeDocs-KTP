@@ -51,15 +51,26 @@ const Patients = () => {
 
   const loadPatients = async () => {
     setLoading(true);
+    console.log('🔄 Loading patients...');
     try {
+      console.log('📡 Making API call to patients endpoint...');
       const response = await patientsAPI.getAll({
         search: debouncedSearchTerm,
         status: filterStatus === 'all' ? undefined : filterStatus
       });
+      console.log('✅ API response received:', response);
+      console.log('📊 Patients data:', response.data.data);
       setPatients(response.data.data || []);
+      console.log('✅ Patients loaded successfully');
     } catch (error) {
-      console.error('Error loading patients:', error);
-      toast.error('Failed to load patients');
+      console.error('❌ Error loading patients:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error('Failed to load patients: ' + error.message);
       setPatients([]);
     } finally {
       setLoading(false);
