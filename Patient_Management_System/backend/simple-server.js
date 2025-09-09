@@ -8,6 +8,8 @@ require('dotenv').config();
 const salesforceService = require('./services/salesforce');
 // Import settings routes
 const settingsRoutes = require('./routes/settings');
+// Import appointments routes
+const appointmentsRoutes = require('./routes/appointments');
 
 // Helper functions for Salesforce sync
 async function handleSalesforceUpdate(row, updatedPatient, res, id) {
@@ -161,6 +163,7 @@ app.get('/api/health', (req, res) => {
 
 // Settings routes
 app.use('/api/settings', settingsRoutes);
+app.use('/api/appointments', appointmentsRoutes);
 
 // Salesforce test endpoint
 app.get('/api/salesforce/test', async (req, res) => {
