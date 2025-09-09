@@ -9,7 +9,7 @@ const defaultSalesforceConfig = {
   // NOTE: Credentials configured - will work in simulation mode if connection fails
   DEFAULT_USERNAME: 'masterenterprise@test.com',
   DEFAULT_PASSWORD: '1@Balumani9A',
-  DEFAULT_SECURITY_TOKEN: 'nm2A4WwPTmKR6NoWAyEfboWg',
+  DEFAULT_SECURITY_TOKEN: 'fgk59HeeBVpYsoO1o2x8FqxH1',
   DEFAULT_LOGIN_URL: 'https://login.salesforce.com', // Using production URL
   
   // Instructions for setting up your own demo org

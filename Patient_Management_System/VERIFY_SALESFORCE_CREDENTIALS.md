@@ -6,7 +6,7 @@ The credentials you provided are currently not connecting. This could be due to 
 ## Your Provided Credentials:
 - **Username**: masterenterprise@test.com
 - **Password**: 1@Balumani9A
-- **Security Token**: nm2A4WwPTmKR6NoWAyEfboWg
+- **Security Token**: fgk59HeeBVpYsoO1o2x8FqxH1
 
 ## Steps to Verify and Fix:
 

@@ -2,10 +2,10 @@ const jsforce = require('jsforce');
 
 // Your Salesforce credentials
 const config = {
-  loginUrl: 'https://test.salesforce.com',
+  loginUrl: 'https://login.salesforce.com', // Production URL
   username: 'masterenterprise@test.com',
   password: '1@Balumani9A',
-  securityToken: 'nm2A4WwPTmKR6NoWAyEfboWg'
+  securityToken: 'fgk59HeeBVpYsoO1o2x8FqxH1' // Updated token
 };
 
 async function testConnection() {
