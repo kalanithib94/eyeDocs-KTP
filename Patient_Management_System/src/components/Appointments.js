@@ -10,11 +10,12 @@ import {
   FiXCircle
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import { appointmentsAPI } from '../services/api';
+import { appointmentsAPI, patientsAPI } from '../services/api';
 import './Appointments.css';
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
@@ -28,22 +29,11 @@ const Appointments = () => {
     status: 'scheduled',
     duration: 30
   });
-  const [patients, setPatients] = useState([]);
 
   useEffect(() => {
     loadAppointments();
     loadPatients();
   }, []);
-
-  const loadPatients = async () => {
-    try {
-      const response = await fetch('https://eyedocs-ktp-production.up.railway.app/api/patients');
-      const data = await response.json();
-      setPatients(data.data || []);
-    } catch (error) {
-      console.error('Error loading patients:', error);
-    }
-  };
 
   const loadAppointments = async () => {
     setLoading(true);
@@ -71,6 +61,17 @@ const Appointments = () => {
     }
   };
 
+  const loadPatients = async () => {
+    try {
+      const response = await patientsAPI.getAll();
+      setPatients(response.data.data || []);
+    } catch (error) {
+      console.error('Error loading patients:', error);
+      toast.error('Failed to load patients');
+      setPatients([]);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -82,22 +83,13 @@ const Appointments = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate that a patient is selected
-    if (!formData.patientId) {
-      toast.error('Please select a patient');
-      return;
-    }
-    
-    console.log('🔍 Appointment Form Data:', formData);
-    console.log('🔍 Editing Appointment:', editingAppointment);
-    
     try {
       if (editingAppointment) {
         // Update existing appointment via API
         await appointmentsAPI.update(editingAppointment.id, {
-          patientId: parseInt(formData.patientId),
-          appointmentDate: formData.date,
-          appointmentTime: formData.time,
+          patient_id: formData.patientId,
+          appointment_date: formData.date,
+          appointment_time: formData.time,
           type: formData.type,
           notes: formData.notes,
           status: formData.status,
@@ -107,9 +99,9 @@ const Appointments = () => {
       } else {
         // Add new appointment via API
         await appointmentsAPI.create({
-          patientId: parseInt(formData.patientId),
-          appointmentDate: formData.date,
-          appointmentTime: formData.time,
+          patient_id: formData.patientId,
+          appointment_date: formData.date,
+          appointment_time: formData.time,
           type: formData.type,
           notes: formData.notes,
           status: formData.status,
@@ -134,13 +126,8 @@ const Appointments = () => {
         duration: 30
       });
     } catch (error) {
-      console.error('❌ Error saving appointment:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      toast.error('Failed to save appointment: ' + (error.response?.data?.message || error.message));
+      console.error('Error saving appointment:', error);
+      toast.error('Failed to save appointment');
     }
   };
 
@@ -357,7 +344,7 @@ const Appointments = () => {
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Select Patient</label>
+                  <label className="form-label">Patient</label>
                   <select
                     name="patientId"
                     value={formData.patientId}
@@ -365,10 +352,10 @@ const Appointments = () => {
                     className="form-select"
                     required
                   >
-                    <option value="">Choose a patient...</option>
+                    <option value="">Select a patient</option>
                     {patients.map(patient => (
                       <option key={patient.id} value={patient.id}>
-                        {patient.first_name} {patient.last_name} (ID: {patient.id})
+                        {patient.first_name} {patient.last_name}
                       </option>
                     ))}
                   </select>
@@ -413,6 +400,9 @@ const Appointments = () => {
                     required
                   />
                 </div>
+              </div>
+              
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Duration (minutes)</label>
                   <input
@@ -427,23 +417,22 @@ const Appointments = () => {
                     required
                   />
                 </div>
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="form-select"
-                  required
-                >
-                  <option value="scheduled">Scheduled</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="urgent">Urgent</option>
-                </select>
+                <div className="form-group">
+                  <label className="form-label">Status</label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value="scheduled">Scheduled</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
               </div>
               
               <div className="form-group">
