@@ -117,6 +117,113 @@ class SalesforceService {
     };
   }
 
+  async updateReferral(salesforceId, patientData) {
+    try {
+      if (!this.isConnected) {
+        console.log('⚠️  Salesforce not connected. Using simulation mode for update.');
+        return await this.simulateReferralUpdate(patientData);
+      }
+
+      const referralData = {
+        Name: `${patientData.first_name} ${patientData.last_name}`,
+        First_Name__c: patientData.first_name,
+        Last_Name__c: patientData.last_name,
+        Email__c: patientData.email,
+        Phone__c: patientData.phone,
+        Date_of_Birth__c: patientData.date_of_birth,
+        Address__c: patientData.address,
+        Emergency_Contact__c: patientData.emergency_contact,
+        Medical_History__c: patientData.medical_history,
+        Allergies__c: patientData.allergies,
+        Medications__c: patientData.medications,
+        Status__c: patientData.status || 'Active',
+        Source__c: 'Patient Management System',
+        Last_Updated__c: new Date().toISOString()
+      };
+
+      console.log(`🔄 Updating Salesforce referral: ${salesforceId}`);
+      console.log(`📋 Referral data:`, referralData);
+
+      const result = await this.conn.sobject('Referral__c').update({
+        Id: salesforceId,
+        ...referralData
+      });
+
+      console.log(`✅ Successfully updated Salesforce referral: ${salesforceId}`);
+      console.log(`📊 Update result:`, result);
+
+      return {
+        success: true,
+        salesforceId: salesforceId,
+        mode: 'live',
+        referralData: referralData
+      };
+    } catch (error) {
+      console.error('❌ Error updating Salesforce referral:', error.message);
+      throw error;
+    }
+  }
+
+  async deleteReferral(salesforceId) {
+    try {
+      if (!this.isConnected) {
+        console.log('⚠️  Salesforce not connected. Using simulation mode for deletion.');
+        return await this.simulateReferralDeletion(salesforceId);
+      }
+
+      console.log(`🔄 Deleting Salesforce referral: ${salesforceId}`);
+
+      const result = await this.conn.sobject('Referral__c').destroy(salesforceId);
+
+      console.log(`✅ Successfully deleted Salesforce referral: ${salesforceId}`);
+      console.log(`📊 Delete result:`, result);
+
+      return {
+        success: true,
+        salesforceId: salesforceId,
+        mode: 'live'
+      };
+    } catch (error) {
+      console.error('❌ Error deleting Salesforce referral:', error.message);
+      throw error;
+    }
+  }
+
+  async simulateReferralUpdate(patientData) {
+    // Simulate a delay for realistic behavior
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log(`🔄 Simulated referral update for: ${patientData.first_name} ${patientData.last_name}`);
+    
+    return {
+      success: true,
+      salesforceId: `REF_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      mode: 'simulation',
+      referralData: {
+        Name: `${patientData.first_name} ${patientData.last_name}`,
+        First_Name__c: patientData.first_name,
+        Last_Name__c: patientData.last_name,
+        Email__c: patientData.email,
+        Phone__c: patientData.phone,
+        Status__c: patientData.status || 'Active',
+        Source__c: 'Patient Management System'
+      }
+    };
+  }
+
+  async simulateReferralDeletion(salesforceId) {
+    // Simulate a delay for realistic behavior
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log(`🔄 Simulated referral deletion: ${salesforceId}`);
+    
+    return {
+      success: true,
+      salesforceId: salesforceId,
+      mode: 'simulation'
+    };
+  }
+
   async testConnection() {
     try {
       if (!this.isConnected) {
