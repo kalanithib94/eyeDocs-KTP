@@ -1,18 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Professional Patient Management System"
-    />
+    <meta name="description" content="Patient Management System" />
     <title>Patient Management System</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: green; }
+        .error { color: red; }
+        .loading { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Patient Management System - Direct Test</h1>
+        <p>This page tests the backend connection directly without React.</p>
+        
+        <div class="test-section">
+            <h2>Backend Connection Test</h2>
+            <div id="backend-test">
+                <p class="loading">Testing backend connection...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Patients API Test</h2>
+            <div id="patients-test">
+                <p class="loading">Testing patients API...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test backend health
+        console.log('Testing backend connection...');
+        fetch('https://eyedocs-ktp-production.up.railway.app/api/health')
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Backend health check successful:', data);
+                document.getElementById('backend-test').innerHTML = 
+                    '<p class="success">✅ Backend is working: ' + JSON.stringify(data) + '</p>';
+            })
+            .catch(error => {
+                console.error('❌ Backend health check failed:', error);
+                document.getElementById('backend-test').innerHTML = 
+                    '<p class="error">❌ Backend error: ' + error.message + '</p>';
+            });
+
+        // Test patients API
+        console.log('Testing patients API...');
+        fetch('https://eyedocs-ktp-production.up.railway.app/api/patients')
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Patients API successful:', data);
+                document.getElementById('patients-test').innerHTML = 
+                    '<p class="success">✅ Patients API working: ' + data.data.length + ' patients found</p>';
+            })
+            .catch(error => {
+                console.error('❌ Patients API failed:', error);
+                document.getElementById('patients-test').innerHTML = 
+                    '<p class="error">❌ Patients API error: ' + error.message + '</p>';
+            });
+    </script>
+</body>
 </html>

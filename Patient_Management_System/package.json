@@ -1,6 +1,6 @@
 {
   "name": "patient-management-frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Modern Patient Management System Frontend",
   "main": "index.js",
   "scripts": {
