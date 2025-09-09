@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .success { 
+            color: #28a745; 
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+            margin: 10px 0;
+        }
+        .error { 
+            color: #dc3545; 
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+            margin: 10px 0;
+        }
+        .warning { 
+            color: #856404; 
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ffeeba;
+            margin: 10px 0;
+        }
+        .loading { 
+            color: #007bff; 
+            background: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #bee5eb;
+            margin: 10px 0;
+        }
+        .url {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Complete Deployment Test</h1>
+        <p>This page tests your complete deployment setup. Click the button below to run all tests.</p>
+        
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+        
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="results">
+                <p class="loading">Click "Run All Tests" to begin...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 Summary</h2>
+            <div id="summary">
+                <p>Test summary will appear here after running tests...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://eyedocs-ktp-production.up.railway.app';
+        const OLD_BACKEND_URL = 'https://patient-management-backend-production.up.railway.app';
+        
+        function addResult(message, type = 'loading') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '<p class="loading">Click "Run All Tests" to begin...</p>';
+            document.getElementById('summary').innerHTML = '<p>Test summary will appear here after running tests...</p>';
+        }
+        
+        async function runAllTests() {
+            clearResults();
+            document.getElementById('results').innerHTML = '';
+            
+            let passedTests = 0;
+            let failedTests = 0;
+            
+            // Test 1: Check if old backend is down
+            addResult('Testing OLD backend URL: <span class="url">' + OLD_BACKEND_URL + '</span>', 'loading');
+            try {
+                const response = await fetch(OLD_BACKEND_URL + '/api/health');
+                const data = await response.json();
+                addResult('⚠️ OLD backend is still running: ' + JSON.stringify(data), 'warning');
+                failedTests++;
+            } catch (error) {
+                addResult('✅ OLD backend is not accessible (GOOD)', 'success');
+                passedTests++;
+            }
+            
+            // Test 2: Check if new backend is working
+            addResult('Testing NEW backend URL: <span class="url">' + BACKEND_URL + '</span>', 'loading');
+            try {
+                const response = await fetch(BACKEND_URL + '/api/health');
+                const data = await response.json();
+                addResult('✅ NEW backend is working: ' + JSON.stringify(data), 'success');
+                passedTests++;
+            } catch (error) {
+                addResult('❌ NEW backend is not accessible: ' + error.message, 'error');
+                failedTests++;
+            }
+            
+            // Test 3: Check patients API
+            addResult('Testing Patients API...', 'loading');
+            try {
+                const response = await fetch(BACKEND_URL + '/api/patients');
+                const data = await response.json();
+                addResult('✅ Patients API is working: Found ' + data.data.length + ' patients', 'success');
+                passedTests++;
+            } catch (error) {
+                addResult('❌ Patients API failed: ' + error.message, 'error');
+                failedTests++;
+            }
+            
+            // Test 4: Check appointments API
+            addResult('Testing Appointments API...', 'loading');
+            try {
+                const response = await fetch(BACKEND_URL + '/api/appointments');
+                const data = await response.json();
+                addResult('✅ Appointments API is working: Found ' + data.data.length + ' appointments', 'success');
+                passedTests++;
+            } catch (error) {
+                addResult('❌ Appointments API failed: ' + error.message, 'error');
+                failedTests++;
+            }
+            
+            // Test 5: Check analytics API
+            addResult('Testing Analytics API...', 'loading');
+            try {
+                const response = await fetch(BACKEND_URL + '/api/analytics/overview');
+                const data = await response.json();
+                addResult('✅ Analytics API is working', 'success');
+                passedTests++;
+            } catch (error) {
+                addResult('❌ Analytics API failed: ' + error.message, 'error');
+                failedTests++;
+            }
+            
+            // Update summary
+            const summaryDiv = document.getElementById('summary');
+            const totalTests = passedTests + failedTests;
+            let summaryHTML = '<h3>Test Results Summary:</h3>';
+            summaryHTML += '<p>Total Tests: ' + totalTests + '</p>';
+            summaryHTML += '<p class="success">✅ Passed: ' + passedTests + '</p>';
+            summaryHTML += '<p class="error">❌ Failed: ' + failedTests + '</p>';
+            
+            if (failedTests === 0) {
+                summaryHTML += '<div class="success"><strong>🎉 All tests passed! Your deployment is working correctly!</strong></div>';
+            } else {
+                summaryHTML += '<div class="error"><strong>⚠️ Some tests failed. Please check the results above.</strong></div>';
+            }
+            
+            summaryHTML += '<h4>Next Steps:</h4>';
+            if (failedTests === 0) {
+                summaryHTML += '<ol>';
+                summaryHTML += '<li>Your backend is deployed and working at: <span class="url">' + BACKEND_URL + '</span></li>';
+                summaryHTML += '<li>Your frontend should now be able to connect to the backend</li>';
+                summaryHTML += '<li>Visit your main application to test the full system</li>';
+                summaryHTML += '</ol>';
+            } else {
+                summaryHTML += '<ol>';
+                summaryHTML += '<li>Check Railway dashboard to ensure backend is running</li>';
+                summaryHTML += '<li>Verify the backend URL is correct</li>';
+                summaryHTML += '<li>Check Railway logs for any errors</li>';
+                summaryHTML += '</ol>';
+            }
+            
+            summaryDiv.innerHTML = summaryHTML;
+        }
+    </script>
+</body>
+</html>
