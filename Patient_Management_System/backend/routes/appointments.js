@@ -7,7 +7,7 @@ const router = express.Router();
 // Validation schemas
 const appointmentSchema = Joi.object({
   patientId: Joi.number().integer().positive().required(),
-  appointmentDate: Joi.date().min('now').required(),
+  appointmentDate: Joi.date().required(),
   appointmentTime: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
   type: Joi.string().valid('general', 'follow-up', 'consultation', 'emergency').required(),
   notes: Joi.string().max(1000).allow(''),
