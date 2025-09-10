@@ -225,37 +225,13 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
-    try {
-      // Ultra-safe time formatting with multiple checks
-      if (time === null || time === undefined || time === '') return 'No time';
-      
-      // Convert to string and clean it
-      let timeStr = String(time || '').trim();
-      if (!timeStr || timeStr === 'undefined' || timeStr === 'null' || timeStr === '') {
-        return 'No time';
-      }
-      
-      // If it doesn't have a colon, just return it as is
-      if (!timeStr.includes(':')) return timeStr;
-      
-      // Safe split with additional checks
-      const parts = timeStr.split(':');
-      if (!parts || parts.length < 2 || !parts[0] || !parts[1]) {
-        return timeStr;
-      }
-      
-      const hour = parseInt(parts[0], 10);
-      const minute = parts[1];
-      
-      if (isNaN(hour) || hour < 0 || hour > 23) return timeStr;
-      
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour % 12 || 12;
-      return `${displayHour}:${minute} ${ampm}`;
-    } catch (error) {
-      console.error('Error in formatTime:', error, 'Input was:', time);
-      return 'Invalid time';
+    // Super simple time display - no split() needed!
+    if (!time || time === 'undefined' || time === 'null' || time === '') {
+      return 'No time set';
     }
+    
+    // Just return the time as-is, it's already in the right format
+    return String(time).trim();
   };
 
   if (loading) {

@@ -95,7 +95,8 @@ const AIInsights = () => {
 
     // High-Risk Patients
     const highRiskPatients = patients.filter(p => {
-      const hasMultipleConditions = (p.medical_history && typeof p.medical_history === 'string' && p.medical_history.split(',').length > 2);
+      // Simple check without split() - just check if medical_history exists and has content
+      const hasMultipleConditions = (p.medical_history && p.medical_history.length > 20);
       const hasAllergies = (p.allergies && p.allergies !== 'None');
       return hasMultipleConditions || hasAllergies;
     });
