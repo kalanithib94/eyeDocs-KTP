@@ -1,0 +1,10 @@
+[33mcfecc19[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Vercel deployment: restore proper index.html and update routing config
+[33mff9953e[m Fix corrupted characters in API file causing build failure
+[33mfeae125[m Add missing appointments routes to main server
+[33m4dfde18[m Fix syntax errors - move async functions outside route handlers
+[33m6ebe815[m Fix async callback issues in patient update/delete endpoints
+[33m185d940[m Add Salesforce sync for patient updates and deletes
+[33m6ffbbe5[m Add missing PATCH /api/appointments/:id/status endpoint
+[33m59c698c[m Fix appointment date validation - allow past dates for editing
+[33mbaec958[m Add debugging logs to appointment form submission
+[33m0d0060d[m Fix appointment creation/update errors - add patient dropdown, fix API mapping, add duration field
