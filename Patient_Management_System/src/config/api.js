@@ -1,6 +1,8 @@
 // API Configuration - Force correct backend URL
 export const API_CONFIG = {
-  BASE_URL: 'https://eyedocs-ktp-production.up.railway.app/api',
+  BASE_URL: process.env.NODE_ENV === 'production' 
+    ? 'https://eyedocs-ktp-production.up.railway.app/api'
+    : 'http://localhost:5000/api',
   TIMEOUT: 15000,
   HEADERS: {
     'Content-Type': 'application/json',
