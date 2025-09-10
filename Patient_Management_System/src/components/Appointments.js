@@ -42,10 +42,10 @@ const Appointments = () => {
       // Transform the data to match the expected format
       const transformedAppointments = response.data.data.map(apt => ({
         id: apt.id,
-        patientId: apt.patient_id,
-        patientName: `${apt.first_name} ${apt.last_name}`,
-        date: apt.appointment_date,
-        time: apt.appointment_time,
+        patientId: apt.patientId,
+        patientName: apt.patientName,
+        date: apt.appointmentDate,
+        time: apt.appointmentTime,
         type: apt.type,
         notes: apt.notes,
         status: apt.status,
@@ -87,9 +87,9 @@ const Appointments = () => {
       if (editingAppointment) {
         // Update existing appointment via API
         await appointmentsAPI.update(editingAppointment.id, {
-          patient_id: formData.patientId,
-          appointment_date: formData.date,
-          appointment_time: formData.time,
+          patientId: formData.patientId,
+          appointmentDate: formData.date,
+          appointmentTime: formData.time,
           type: formData.type,
           notes: formData.notes,
           status: formData.status,
@@ -99,9 +99,9 @@ const Appointments = () => {
       } else {
         // Add new appointment via API
         await appointmentsAPI.create({
-          patient_id: formData.patientId,
-          appointment_date: formData.date,
-          appointment_time: formData.time,
+          patientId: formData.patientId,
+          appointmentDate: formData.date,
+          appointmentTime: formData.time,
           type: formData.type,
           notes: formData.notes,
           status: formData.status,
@@ -192,7 +192,10 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
-    const [hours, minutes] = time.split(':');
+    if (!time) return 'No time set';
+    const timeParts = time.split(':');
+    if (timeParts.length < 2) return time;
+    const [hours, minutes] = timeParts;
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
