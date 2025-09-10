@@ -12,7 +12,7 @@ import {
   FiUsers
 } from 'react-icons/fi';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import axios from 'axios';
+import { patientsAPI, appointmentsAPI, analyticsAPI } from '../services/api';
 import './AIInsights.css';
 
 const AIInsights = () => {
@@ -30,11 +30,11 @@ const AIInsights = () => {
   const loadDataAndGenerateInsights = async () => {
     setLoading(true);
     try {
-      // Load real data
+      // Load real data using proper API services
       const [patientsRes, appointmentsRes, analyticsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/patients'),
-        axios.get('http://localhost:5000/api/appointments'),
-        axios.get('http://localhost:5000/api/analytics/dashboard')
+        patientsAPI.getAll(),
+        appointmentsAPI.getAll(),
+        analyticsAPI.getDashboard()
       ]);
 
       const patients = patientsRes.data.data || [];
