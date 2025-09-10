@@ -76,9 +76,9 @@ const Dashboard = () => {
   
   const upcomingAppointments = (appointmentsData?.data || []).map(appointment => ({
     id: appointment.id,
-    patientName: `${appointment.patient_first_name || ''} ${appointment.patient_last_name || ''}`.trim() || 'Unknown Patient',
-    time: appointment.appointment_time || 'TBD',
-    type: appointment.appointment_type || 'General',
+    patientName: appointment.patientName || 'Unknown Patient',
+    time: appointment.appointmentTime || 'TBD',
+    type: appointment.type || 'General',
     status: appointment.status || 'scheduled'
   }));
 
