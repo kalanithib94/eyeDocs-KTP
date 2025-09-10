@@ -66,6 +66,11 @@ const Appointments = () => {
           duration: apt.duration || 30
         };
         
+        // Ensure time is always a valid string
+        if (!transformed.time || transformed.time === 'undefined' || transformed.time === 'null') {
+          transformed.time = '09:00';
+        }
+        
         console.log(`🔍 Transformed appointment ${index}:`, transformed);
         return transformed;
       });
@@ -212,77 +217,27 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
-    console.log('🔍 formatTime called with:', time, typeof time);
+    // Super simple, bulletproof time formatting
+    if (!time) return 'No time';
     
-    // Ultra-safe time formatting
-    try {
-      // Check for all possible null/undefined cases
-      if (time == null || time === '' || time === 'undefined' || time === 'null') {
-        console.log('🔍 formatTime: null/undefined case, returning "No time set"');
-        return 'No time set';
-      }
-      
-      // Convert to string safely
-      let timeStr = '';
-      if (typeof time === 'string') {
-        timeStr = time.trim();
-      } else if (typeof time === 'number') {
-        timeStr = time.toString();
-      } else {
-        timeStr = String(time || '').trim();
-      }
-      
-      console.log('🔍 formatTime: converted to string:', timeStr);
-      
-      if (!timeStr || timeStr === 'undefined' || timeStr === 'null') {
-        console.log('🔍 formatTime: empty string case, returning "No time set"');
-        return 'No time set';
-      }
-      
-      // Check if it contains colon
-      if (!timeStr.includes(':')) {
-        console.log('🔍 formatTime: no colon found, returning:', timeStr);
-        return timeStr;
-      }
-      
-      const timeParts = timeStr.split(':');
-      console.log('🔍 formatTime: split parts:', timeParts);
-      
-      if (timeParts.length < 2) {
-        console.log('🔍 formatTime: not enough parts, returning:', timeStr);
-        return timeStr;
-      }
-      
-      const hours = timeParts[0];
-      const minutes = timeParts[1];
-      
-      console.log('🔍 formatTime: hours:', hours, 'minutes:', minutes);
-      
-      if (!hours || !minutes) {
-        console.log('🔍 formatTime: empty hours/minutes, returning:', timeStr);
-        return timeStr;
-      }
-      
-      const hour = parseInt(hours, 10);
-      const minute = parseInt(minutes, 10);
-      
-      console.log('🔍 formatTime: parsed hour:', hour, 'minute:', minute);
-      
-      if (isNaN(hour) || isNaN(minute)) {
-        console.log('🔍 formatTime: NaN values, returning:', timeStr);
-        return timeStr;
-      }
-      
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour % 12 || 12;
-      const result = `${displayHour}:${minutes} ${ampm}`;
-      
-      console.log('🔍 formatTime: final result:', result);
-      return result;
-    } catch (error) {
-      console.error('🔍 formatTime error:', time, error);
-      return 'Invalid time';
-    }
+    const timeStr = String(time || '');
+    if (!timeStr || timeStr === 'undefined' || timeStr === 'null') return 'No time';
+    
+    // If it doesn't have a colon, just return it as is
+    if (!timeStr.includes(':')) return timeStr;
+    
+    // Simple split with safety
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    
+    const hour = parseInt(parts[0], 10);
+    const minute = parts[1];
+    
+    if (isNaN(hour)) return timeStr;
+    
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minute} ${ampm}`;
   };
 
   if (loading) {
@@ -325,7 +280,7 @@ const Appointments = () => {
             <div className="appointment-header">
               <div className="appointment-time">
                 <FiClock size={16} />
-                <span>{formatTime(appointment?.time)}</span>
+                <span>{formatTime(appointment?.time || appointment?.appointmentTime || '09:00')}</span>
               </div>
               <div className="appointment-actions">
                 <button 
