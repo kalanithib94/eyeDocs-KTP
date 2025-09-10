@@ -206,23 +206,34 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
-    if (!time || time === 'undefined' || time === 'null') return 'No time set';
+    // Handle all possible undefined/null cases
+    if (time === undefined || time === null || time === '' || 
+        time === 'undefined' || time === 'null' || 
+        typeof time !== 'string') {
+      return 'No time set';
+    }
     
     try {
-      const timeParts = time.toString().split(':');
-      if (timeParts.length < 2) return time.toString();
+      // Ensure it's a string and has content
+      const timeStr = String(time).trim();
+      if (!timeStr) return 'No time set';
+      
+      const timeParts = timeStr.split(':');
+      if (timeParts.length < 2) return timeStr;
       
       const [hours, minutes] = timeParts;
       const hour = parseInt(hours, 10);
       
-      if (isNaN(hour)) return time.toString();
+      if (isNaN(hour) || isNaN(parseInt(minutes, 10))) {
+        return timeStr;
+      }
       
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
       return `${displayHour}:${minutes} ${ampm}`;
     } catch (error) {
       console.error('Error formatting time:', time, error);
-      return time.toString();
+      return 'Invalid time';
     }
   };
 
@@ -258,7 +269,7 @@ const Appointments = () => {
             <div className="appointment-header">
               <div className="appointment-time">
                 <FiClock size={16} />
-                <span>{formatTime(appointment.time)}</span>
+                <span>{formatTime(appointment?.time)}</span>
               </div>
               <div className="appointment-actions">
                 <button 
@@ -281,26 +292,26 @@ const Appointments = () => {
             <div className="appointment-content">
               <div className="appointment-patient">
                 <FiUser size={16} />
-                <span>{appointment.patientName}</span>
+                <span>{appointment?.patientName || 'Unknown Patient'}</span>
               </div>
               
               <div className="appointment-details">
                 <div className="appointment-date">
                   <FiCalendar size={14} />
-                  <span>{appointment.date ? new Date(appointment.date).toLocaleDateString() : 'No date set'}</span>
+                  <span>{appointment?.date ? new Date(appointment.date).toLocaleDateString() : 'No date set'}</span>
                 </div>
                 
                 <div className="appointment-type">
                   <span 
                     className="type-badge"
-                    style={{ backgroundColor: getTypeColor(appointment.type) }}
+                    style={{ backgroundColor: getTypeColor(appointment?.type || 'general') }}
                   >
-                    {appointment.type.replace('-', ' ')}
+                    {(appointment?.type || 'general').replace('-', ' ')}
                   </span>
                 </div>
               </div>
               
-              {appointment.notes && (
+              {appointment?.notes && (
                 <div className="appointment-notes">
                   <p>{appointment.notes}</p>
                 </div>
@@ -311,9 +322,9 @@ const Appointments = () => {
               <div className="appointment-status">
                 <span 
                   className="status-badge"
-                  style={{ backgroundColor: getStatusColor(appointment.status) }}
+                  style={{ backgroundColor: getStatusColor(appointment?.status || 'scheduled') }}
                 >
-                  {appointment.status}
+                  {appointment?.status || 'scheduled'}
                 </span>
               </div>
               
