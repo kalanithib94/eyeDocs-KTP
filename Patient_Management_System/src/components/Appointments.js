@@ -206,25 +206,48 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
-    // Handle all possible undefined/null cases
-    if (time === undefined || time === null || time === '' || 
-        time === 'undefined' || time === 'null' || 
-        typeof time !== 'string') {
-      return 'No time set';
-    }
-    
+    // Ultra-safe time formatting
     try {
-      // Ensure it's a string and has content
-      const timeStr = String(time).trim();
-      if (!timeStr) return 'No time set';
+      // Check for all possible null/undefined cases
+      if (time == null || time === '' || time === 'undefined' || time === 'null') {
+        return 'No time set';
+      }
+      
+      // Convert to string safely
+      let timeStr = '';
+      if (typeof time === 'string') {
+        timeStr = time.trim();
+      } else if (typeof time === 'number') {
+        timeStr = time.toString();
+      } else {
+        timeStr = String(time || '').trim();
+      }
+      
+      if (!timeStr || timeStr === 'undefined' || timeStr === 'null') {
+        return 'No time set';
+      }
+      
+      // Check if it contains colon
+      if (!timeStr.includes(':')) {
+        return timeStr;
+      }
       
       const timeParts = timeStr.split(':');
-      if (timeParts.length < 2) return timeStr;
+      if (timeParts.length < 2) {
+        return timeStr;
+      }
       
-      const [hours, minutes] = timeParts;
+      const hours = timeParts[0];
+      const minutes = timeParts[1];
+      
+      if (!hours || !minutes) {
+        return timeStr;
+      }
+      
       const hour = parseInt(hours, 10);
+      const minute = parseInt(minutes, 10);
       
-      if (isNaN(hour) || isNaN(parseInt(minutes, 10))) {
+      if (isNaN(hour) || isNaN(minute)) {
         return timeStr;
       }
       
@@ -246,8 +269,9 @@ const Appointments = () => {
     );
   }
 
-  return (
-    <div className="appointments">
+  try {
+    return (
+      <div className="appointments">
       <div className="appointments-header">
         <div>
           <h1 className="appointments-title">Appointments</h1>
@@ -264,8 +288,15 @@ const Appointments = () => {
 
       {/* Appointments List */}
       <div className="appointments-grid">
-        {appointments.map(appointment => (
-          <div key={appointment.id} className="appointment-card">
+        {appointments && appointments.length > 0 ? appointments.map(appointment => {
+          // Safety check for each appointment
+          if (!appointment || typeof appointment !== 'object') {
+            console.warn('Invalid appointment data:', appointment);
+            return null;
+          }
+          
+          return (
+          <div key={appointment.id || Math.random()} className="appointment-card">
             <div className="appointment-header">
               <div className="appointment-time">
                 <FiClock size={16} />
@@ -359,7 +390,12 @@ const Appointments = () => {
               </div>
             </div>
           </div>
-        ))}
+          );
+        }) : (
+          <div className="no-appointments">
+            <p>No appointments found</p>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
@@ -505,7 +541,21 @@ const Appointments = () => {
         </div>
       )}
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('Error rendering appointments component:', error);
+    return (
+      <div className="appointments">
+        <div className="error-container">
+          <h2>Error Loading Appointments</h2>
+          <p>There was an error loading the appointments. Please try refreshing the page.</p>
+          <button onClick={() => window.location.reload()} className="btn btn-primary">
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Appointments;
