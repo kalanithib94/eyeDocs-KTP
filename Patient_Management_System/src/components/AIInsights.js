@@ -95,7 +95,7 @@ const AIInsights = () => {
 
     // High-Risk Patients
     const highRiskPatients = patients.filter(p => {
-      const hasMultipleConditions = (p.medical_history && p.medical_history.split(',').length > 2);
+      const hasMultipleConditions = (p.medical_history && typeof p.medical_history === 'string' && p.medical_history.split(',').length > 2);
       const hasAllergies = (p.allergies && p.allergies !== 'None');
       return hasMultipleConditions || hasAllergies;
     });
