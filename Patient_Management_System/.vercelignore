@@ -1,0 +1,16 @@
+# Ignore nested Patient_Management_System folder
+Patient_Management_System/
+
+# Ignore cleanup files
+cleanup-files/
+
+# Ignore backend (not needed for frontend deployment)
+backend/
+
+# Ignore development files
+node_modules/
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
