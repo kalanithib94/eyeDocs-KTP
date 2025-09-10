@@ -38,36 +38,42 @@ const Appointments = () => {
   const loadAppointments = async () => {
     setLoading(true);
     try {
-      console.log('Loading appointments...');
+      console.log('🔍 Loading appointments...');
       const response = await appointmentsAPI.getAll();
-      console.log('Appointments API response:', response);
+      console.log('🔍 Raw API response:', response);
       
       if (!response.data || !response.data.data) {
-        console.error('Invalid response structure:', response);
+        console.error('🔍 Invalid response structure:', response);
         setAppointments([]);
         return;
       }
       
       // Transform the data to match the expected format
-      const transformedAppointments = response.data.data.map(apt => {
-        console.log('Processing appointment:', apt);
-        return {
+      const transformedAppointments = response.data.data.map((apt, index) => {
+        console.log(`🔍 Processing appointment ${index}:`, apt);
+        console.log(`🔍 Time field value:`, apt.appointmentTime, typeof apt.appointmentTime);
+        console.log(`🔍 Time field (alt):`, apt.time, typeof apt.time);
+        
+        const transformed = {
           id: apt.id,
           patientId: apt.patientId,
           patientName: apt.patientName || 'Unknown Patient',
           date: apt.appointmentDate || apt.date,
-          time: apt.appointmentTime || apt.time,
+          time: apt.appointmentTime || apt.time || '09:00', // Default fallback
           type: apt.type || 'general',
           notes: apt.notes || '',
           status: apt.status || 'scheduled',
           duration: apt.duration || 30
         };
+        
+        console.log(`🔍 Transformed appointment ${index}:`, transformed);
+        return transformed;
       });
       
-      console.log('Transformed appointments:', transformedAppointments);
+      console.log('🔍 All transformed appointments:', transformedAppointments);
       setAppointments(transformedAppointments);
     } catch (error) {
-      console.error('Error loading appointments:', error);
+      console.error('🔍 Error loading appointments:', error);
       toast.error('Failed to load appointments');
       setAppointments([]);
     } finally {
@@ -206,10 +212,13 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
+    console.log('🔍 formatTime called with:', time, typeof time);
+    
     // Ultra-safe time formatting
     try {
       // Check for all possible null/undefined cases
       if (time == null || time === '' || time === 'undefined' || time === 'null') {
+        console.log('🔍 formatTime: null/undefined case, returning "No time set"');
         return 'No time set';
       }
       
@@ -223,39 +232,55 @@ const Appointments = () => {
         timeStr = String(time || '').trim();
       }
       
+      console.log('🔍 formatTime: converted to string:', timeStr);
+      
       if (!timeStr || timeStr === 'undefined' || timeStr === 'null') {
+        console.log('🔍 formatTime: empty string case, returning "No time set"');
         return 'No time set';
       }
       
       // Check if it contains colon
       if (!timeStr.includes(':')) {
+        console.log('🔍 formatTime: no colon found, returning:', timeStr);
         return timeStr;
       }
       
       const timeParts = timeStr.split(':');
+      console.log('🔍 formatTime: split parts:', timeParts);
+      
       if (timeParts.length < 2) {
+        console.log('🔍 formatTime: not enough parts, returning:', timeStr);
         return timeStr;
       }
       
       const hours = timeParts[0];
       const minutes = timeParts[1];
       
+      console.log('🔍 formatTime: hours:', hours, 'minutes:', minutes);
+      
       if (!hours || !minutes) {
+        console.log('🔍 formatTime: empty hours/minutes, returning:', timeStr);
         return timeStr;
       }
       
       const hour = parseInt(hours, 10);
       const minute = parseInt(minutes, 10);
       
+      console.log('🔍 formatTime: parsed hour:', hour, 'minute:', minute);
+      
       if (isNaN(hour) || isNaN(minute)) {
+        console.log('🔍 formatTime: NaN values, returning:', timeStr);
         return timeStr;
       }
       
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
-      return `${displayHour}:${minutes} ${ampm}`;
+      const result = `${displayHour}:${minutes} ${ampm}`;
+      
+      console.log('🔍 formatTime: final result:', result);
+      return result;
     } catch (error) {
-      console.error('Error formatting time:', time, error);
+      console.error('🔍 formatTime error:', time, error);
       return 'Invalid time';
     }
   };
