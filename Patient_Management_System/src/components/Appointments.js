@@ -38,19 +38,33 @@ const Appointments = () => {
   const loadAppointments = async () => {
     setLoading(true);
     try {
+      console.log('Loading appointments...');
       const response = await appointmentsAPI.getAll();
+      console.log('Appointments API response:', response);
+      
+      if (!response.data || !response.data.data) {
+        console.error('Invalid response structure:', response);
+        setAppointments([]);
+        return;
+      }
+      
       // Transform the data to match the expected format
-      const transformedAppointments = response.data.data.map(apt => ({
-        id: apt.id,
-        patientId: apt.patientId,
-        patientName: apt.patientName,
-        date: apt.appointmentDate,
-        time: apt.appointmentTime,
-        type: apt.type,
-        notes: apt.notes,
-        status: apt.status,
-        duration: apt.duration
-      }));
+      const transformedAppointments = response.data.data.map(apt => {
+        console.log('Processing appointment:', apt);
+        return {
+          id: apt.id,
+          patientId: apt.patientId,
+          patientName: apt.patientName || 'Unknown Patient',
+          date: apt.appointmentDate || apt.date,
+          time: apt.appointmentTime || apt.time,
+          type: apt.type || 'general',
+          notes: apt.notes || '',
+          status: apt.status || 'scheduled',
+          duration: apt.duration || 30
+        };
+      });
+      
+      console.log('Transformed appointments:', transformedAppointments);
       setAppointments(transformedAppointments);
     } catch (error) {
       console.error('Error loading appointments:', error);
@@ -192,14 +206,24 @@ const Appointments = () => {
   };
 
   const formatTime = (time) => {
-    if (!time) return 'No time set';
-    const timeParts = time.split(':');
-    if (timeParts.length < 2) return time;
-    const [hours, minutes] = timeParts;
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+    if (!time || time === 'undefined' || time === 'null') return 'No time set';
+    
+    try {
+      const timeParts = time.toString().split(':');
+      if (timeParts.length < 2) return time.toString();
+      
+      const [hours, minutes] = timeParts;
+      const hour = parseInt(hours, 10);
+      
+      if (isNaN(hour)) return time.toString();
+      
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+      console.error('Error formatting time:', time, error);
+      return time.toString();
+    }
   };
 
   if (loading) {
@@ -263,7 +287,7 @@ const Appointments = () => {
               <div className="appointment-details">
                 <div className="appointment-date">
                   <FiCalendar size={14} />
-                  <span>{new Date(appointment.date).toLocaleDateString()}</span>
+                  <span>{appointment.date ? new Date(appointment.date).toLocaleDateString() : 'No date set'}</span>
                 </div>
                 
                 <div className="appointment-type">
