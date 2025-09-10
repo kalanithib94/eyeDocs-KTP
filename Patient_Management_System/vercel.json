@@ -2,10 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "Patient_Management_System/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "build"
+        "distDir": "Patient_Management_System/build"
       }
     }
   ],
@@ -24,7 +24,7 @@
       "runtime": "nodejs18.x"
     }
   },
-  "buildCommand": "npm run build",
-  "outputDirectory": "build",
-  "installCommand": "npm install"
+  "buildCommand": "cd Patient_Management_System && npm run build",
+  "outputDirectory": "Patient_Management_System/build",
+  "installCommand": "cd Patient_Management_System && npm install"
 }

@@ -1,5 +1,5 @@
-# Ignore nested Patient_Management_System folder
-Patient_Management_System/
+# Ignore root src folder (use nested one instead)
+src/
 
 # Ignore cleanup files
 cleanup-files/
