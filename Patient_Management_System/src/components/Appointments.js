@@ -249,9 +249,8 @@ const Appointments = () => {
     );
   }
 
-  try {
-    return (
-      <div className="appointments">
+  return (
+    <div className="appointments">
       <div className="appointments-header">
         <div>
           <h1 className="appointments-title">Appointments</h1>
@@ -521,21 +520,7 @@ const Appointments = () => {
         </div>
       )}
     </div>
-    );
-  } catch (error) {
-    console.error('Error rendering appointments component:', error);
-    return (
-      <div className="appointments">
-        <div className="error-container">
-          <h2>Error Loading Appointments</h2>
-          <p>There was an error loading the appointments. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()} className="btn btn-primary">
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
+  );
 };
 
 export default Appointments;
